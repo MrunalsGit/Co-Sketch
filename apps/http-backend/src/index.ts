@@ -1,19 +1,18 @@
 import express from "express"
 import {string, z} from "zod"
-import userMiddleware from "./middleware/userMiddleware" 
+import userMiddleware from "./middleware/userMiddleware"
+import {signupZodSchema, signinZodSchema} from "@repo/common/types"
+import jwt from "jsonwebtoken"
+import { JWT_SECRET } from "@repo/backend-common/vars"
+
 
 const app = express()
 
 app.use(express.json())
 
-const zodSchema = z.object({
-    "userName" : z.string() .min(1, "Enter your name"),
-    "password" : z.string() .min(1, "Enter password")
-})
-
 app.post("/signup", (req,res)=>{
    try{
-     const valid = zodSchema.safeParse(req.body)
+     const valid = signupZodSchema.safeParse(req.body)
 
         if(!valid.success){
             return res.status(400).json({
@@ -21,7 +20,7 @@ app.post("/signup", (req,res)=>{
             })
         }
 
-        const {userName, password} = req.body
+        const {userName, password, name} = req.body
 
         //add to db
 
@@ -32,14 +31,42 @@ app.post("/signup", (req,res)=>{
    catch(e){
     console.log(`Error during signup : ${e}`)
     return res.json({
-        error : "Error during signup"
+        message : "Error during signup"
     })
    }
 
 })
 
 app.post("/signin", (req,res)=>{
+    try{
+        const valid = signinZodSchema.safeParse(req.body)
+        if(!valid.success){
+            return res.status(400).json({
+                errors : valid.error.issues
+            })
+        }
 
+        if(!JWT_SECRET){
+            console.log(`jwt secret doesnt exist`)
+            return
+        }
+
+        const userId = 1 //dummy for now
+        
+        const token = jwt.sign({
+            userId
+        }, JWT_SECRET)
+
+        res.json({
+            token,
+            message: `Signin successful`
+        })
+    }
+    catch(e){
+        res.json({
+            message: "Error during sign in"
+        })
+    }
 })
 
 app.post("/room", userMiddleware, (req,res)=>{
