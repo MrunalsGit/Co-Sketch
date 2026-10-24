@@ -1,7 +1,7 @@
 import express from "express"
 import {string, z} from "zod"
 import userMiddleware from "./middleware/userMiddleware"
-import {signupZodSchema, signinZodSchema} from "@repo/common/types"
+import {signupZodSchema, signinZodSchema, createRoomZodSchema} from "@repo/common/types"
 import jwt from "jsonwebtoken"
 import { JWT_SECRET } from "@repo/backend-common/vars"
 
@@ -52,7 +52,7 @@ app.post("/signin", (req,res)=>{
         }
 
         const userId = 1 //dummy for now
-        
+
         const token = jwt.sign({
             userId
         }, JWT_SECRET)
@@ -70,6 +70,18 @@ app.post("/signin", (req,res)=>{
 })
 
 app.post("/room", userMiddleware, (req,res)=>{
+    const valid = createRoomZodSchema.safeParse(req.body)
+    if(!valid.success){
+        return res.status(400).json({
+            errors : valid.error.issues
+        })
+    }
+
+    const userId = "1" // hardcoded for now
+
+    res.json({
+        userId
+    })
 })
 
 app.listen(3001)
