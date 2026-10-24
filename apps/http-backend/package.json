@@ -10,7 +10,8 @@
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "@types/jsonwebtoken": "^9.0.10"
+    "@types/jsonwebtoken": "^9.0.10",
+    "@repo/backend-common": "workspace:*"
   },
   "keywords": [],
   "author": "",
