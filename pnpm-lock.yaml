@@ -36,6 +36,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
+      '@repo/backend-common':
+        specifier: workspace:*
+        version: link:../../packages/backend-common
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
@@ -95,12 +98,24 @@ importers:
         specifier: ^8.22.0
         version: 8.22.0
     devDependencies:
+      '@repo/backend-common':
+        specifier: workspace:*
+        version: link:../../packages/backend-common
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
       '@types/jsonwebtoken':
         specifier: ^9.0.10
         version: 9.0.10
+
+  packages/backend-common:
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: 26.4.1
+        version: 26.4.1
 
   packages/eslint-config:
     devDependencies:
