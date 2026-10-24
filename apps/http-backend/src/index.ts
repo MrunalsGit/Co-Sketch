@@ -42,7 +42,7 @@ app.post("/signin", (req,res)=>{
 
 })
 
-app.post("/room", userMiddleware ,(req,res)=>{
+app.post("/room", userMiddleware, (req,res)=>{
 })
 
 app.listen(3001)
