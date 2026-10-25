@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "exports":{
-    "./vars" : "./src/index.ts"
+    "./vars" : "./src/variables.ts"
   },
   "keywords": [],
   "author": "",
