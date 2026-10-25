@@ -1,6 +1,6 @@
 import express from "express"
 import {string, z} from "zod"
-import userMiddleware from "./middleware/userMiddleware"
+import userMiddleware from "./middleware/userMiddleware.js"
 import {signupZodSchema, signinZodSchema, createRoomZodSchema} from "@repo/common/types"
 import jwt from "jsonwebtoken"
 import { JWT_SECRET } from "@repo/backend-common/vars"
@@ -47,8 +47,10 @@ app.post("/signin", (req,res)=>{
         }
 
         if(!JWT_SECRET){
-            console.log(`jwt secret doesnt exist`)
-            return
+            console.log(`jwt secret doesnt exist ${JWT_SECRET}`)
+            return res.status(500).json({
+                message : `Internal server error`
+            })
         }
 
         const userId = 1 //dummy for now

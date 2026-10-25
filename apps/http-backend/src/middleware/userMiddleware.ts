@@ -1,6 +1,6 @@
 import "dotenv/config"
 import {NextFunction, Request, Response} from "express"
-import {CustomRequest} from "../interface/CustomRequest"
+import {CustomRequest} from "../interface/CustomRequest.js"
 import jwt from "jsonwebtoken"
 import {JWT_SECRET} from "@repo/backend-common/vars"
 
