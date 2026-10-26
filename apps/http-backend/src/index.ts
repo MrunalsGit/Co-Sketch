@@ -101,32 +101,59 @@ app.post("/signin", async (req,res)=>{
 })
 
 app.post("/room", userMiddleware,async (req:CustomRequest,res)=>{
-    const valid = createRoomZodSchema.safeParse(req.body)
-    if(!valid.success){
-        return res.status(400).json({
-            errors : valid.error.issues
-        })
-    }
-
-    const userId = req.userId
-    const {roomName} = req.body
-
-    if(!userId || !roomName){
-        return res.json({
-            message : "Enter room name"
-        })
-    }
-
-    const room = await prisma.room.create({
-        data:{
-            slug : roomName,
-            adminId:userId
+    try{
+        const valid = createRoomZodSchema.safeParse(req.body)
+        if(!valid.success){
+            return res.status(400).json({
+                errors : valid.error.issues
+            })
         }
-    })
 
-    return res.json({
-        roomId : room.id
-    })
+        const userId = req.userId
+        const {roomName} = req.body
+
+        if(!userId || !roomName){
+            return res.json({
+                message : "Enter room name"
+            })
+        }
+
+        const room = await prisma.room.create({
+            data:{
+                slug : roomName,
+                adminId:userId
+            }
+        })
+
+        return res.json({
+            roomId : room.id
+        })
+    }catch(e){
+        res.json({
+            message : `Room already exists`
+        })
+    }
+})
+
+app.get("/chat/:roomId", async (req, res)=>{
+    try{
+        const roomId = Number(req.params.roomId)
+        const messages = await prisma.chat.findMany({
+            where : {roomId},
+            orderBy:{
+                id : "desc"
+            },
+            take : 50
+        })
+
+        res.json({
+            messages
+        })
+    }catch(e){
+        res.json({
+            message : `Error occured`
+        })
+    }
 })
 
 app.listen(3001)
