@@ -4,13 +4,16 @@ import userMiddleware from "./middleware/userMiddleware.js"
 import {signupZodSchema, signinZodSchema, createRoomZodSchema} from "@repo/common/types"
 import jwt from "jsonwebtoken"
 import { JWT_SECRET } from "@repo/backend-common/vars"
+import {prisma} from "@repo/db/prisma"
+import bcrypt from "bcrypt"
+import { CustomRequest } from "./interface/CustomRequest.js"
 
 
 const app = express()
 
 app.use(express.json())
 
-app.post("/signup", (req,res)=>{
+app.post("/signup", async (req,res)=>{
    try{
      const valid = signupZodSchema.safeParse(req.body)
 
@@ -20,9 +23,15 @@ app.post("/signup", (req,res)=>{
             })
         }
 
-        const {userName, password, name} = req.body
+        const {userName, password, name, photo} = req.body
+        const hash = await bcrypt.hash(password,5)
 
-        //add to db
+        const user = await prisma.user.create({
+            data:{
+                userName,password:hash,name,photo
+            }
+
+        })
 
         res.json({
             "message" : "Sign up successful"
@@ -37,12 +46,13 @@ app.post("/signup", (req,res)=>{
 
 })
 
-app.post("/signin", (req,res)=>{
+app.post("/signin", async (req,res)=>{
     try{
         const valid = signinZodSchema.safeParse(req.body)
         if(!valid.success){
+            console.log(`Error in signinZodSchema ${valid.error.issues}` )
             return res.status(400).json({
-                errors : valid.error.issues
+                message : "Invalid input"
             })
         }
 
@@ -53,7 +63,26 @@ app.post("/signin", (req,res)=>{
             })
         }
 
-        const userId = 1 //dummy for now
+        const {userName,password} = req.body
+
+        const user = await prisma.user.findUnique({
+            where:{userName}
+        })
+
+        if(!user){
+            return res.json({
+                message : "User not found"
+            })
+        }
+
+        const passCheck = await bcrypt.compare(password,user.password)
+        if(!passCheck){
+            return res.json({
+                message : "Invalid credentials"
+            })
+        }
+
+        const userId = user.id
 
         const token = jwt.sign({
             userId
@@ -71,7 +100,7 @@ app.post("/signin", (req,res)=>{
     }
 })
 
-app.post("/room", userMiddleware, (req,res)=>{
+app.post("/room", userMiddleware,async (req:CustomRequest,res)=>{
     const valid = createRoomZodSchema.safeParse(req.body)
     if(!valid.success){
         return res.status(400).json({
@@ -79,10 +108,24 @@ app.post("/room", userMiddleware, (req,res)=>{
         })
     }
 
-    const userId = "1" // hardcoded for now
+    const userId = req.userId
+    const {roomName} = req.body
 
-    res.json({
-        userId
+    if(!userId || !roomName){
+        return res.json({
+            message : "Enter room name"
+        })
+    }
+
+    const room = await prisma.room.create({
+        data:{
+            slug : roomName,
+            adminId:userId
+        }
+    })
+
+    return res.json({
+        roomId : room.id
     })
 })
 
