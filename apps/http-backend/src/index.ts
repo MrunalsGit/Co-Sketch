@@ -7,11 +7,14 @@ import { JWT_SECRET } from "@repo/backend-common/vars"
 import {prisma} from "@repo/db/prisma"
 import bcrypt from "bcrypt"
 import { CustomRequest } from "./interface/CustomRequest.js"
+import cors from "cors"
 
 
 const app = express()
 
 app.use(express.json())
+
+app.use(cors())
 
 app.post("/signup", async (req,res)=>{
    try{
@@ -141,7 +144,7 @@ app.get("/chat/:roomId", async (req, res)=>{
         const messages = await prisma.chat.findMany({
             where : {roomId},
             orderBy:{
-                id : "desc"
+                id : "asc"
             },
             take : 50
         })
@@ -152,6 +155,27 @@ app.get("/chat/:roomId", async (req, res)=>{
     }catch(e){
         res.json({
             message : `Error occured`
+        })
+    }
+})
+
+app.get("/room/:slug", async (req,res)=>{
+    try{
+        const slug = req.params.slug
+        const room = await prisma.room.findFirst({
+            where:{slug}
+        })
+
+        if (!room) {
+            return res.status(404).json({ message: "Room does not exist" })
+        }
+
+        res.json({
+            room
+        })
+    }catch(e){
+        res.json({
+            message : `Room does not exist`
         })
     }
 })
