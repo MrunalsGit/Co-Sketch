@@ -1,25 +1,31 @@
 import initDraw from "@/app/draw/initDraw"
 import { useEffect, useRef, useState } from "react"
 import Icons from "./Icons"
+import { Game } from "@/app/draw/Game"
 
-type Shape = "circle" | "rectangle" | "pencil"
+export type Tool = "circle" | "rectangle" | "pencil"
 
 export default function Canvas({roomId, socket}: {
     roomId : string,
     socket : WebSocket
 }){
-    const [selected, setSetected] = useState<Shape>("pencil")
+    const [selectedTool, setSetectedTool] = useState<Tool>("rectangle")
     const canvasRef = useRef<HTMLCanvasElement>(null)
+    const [game, setGame] = useState<Game>()
 
     useEffect(()=>{
-        //@ts-ignore
-        window.selected  = selected
-    },[selected])
+        game?.setTool(selectedTool)
+    },[selectedTool, game])
 
     useEffect(()=>{
         
         if(canvasRef.current){
-            initDraw(canvasRef.current, roomId, socket)
+            const g = new Game(canvasRef.current, roomId, socket)
+            setGame(g)
+
+            return ()=>{
+                g.destroy()
+            }
         }
 
     },[canvasRef])
@@ -33,14 +39,14 @@ export default function Canvas({roomId, socket}: {
             <div className="border border-gray-200" style={{
                 position:"fixed",top:20, left:750, display:"flex"
             }}>
-                <Icons activated={selected == "pencil"} onClick={()=>{
-                    setSetected("pencil")
+                <Icons activated={selectedTool == "pencil"} onClick={()=>{
+                    setSetectedTool("pencil")
                 }}>pencil</Icons>
-                <Icons activated={selected == "rectangle"} onClick={()=>{
-                    setSetected("rectangle")
+                <Icons activated={selectedTool == "rectangle"} onClick={()=>{
+                    setSetectedTool("rectangle")
                 }}>Rectangle</Icons>
-                <Icons activated={selected == "circle"} onClick={()=>{
-                    setSetected("circle")
+                <Icons activated={selectedTool == "circle"} onClick={()=>{
+                    setSetectedTool("circle")
                 }}>Circle</Icons>
                 
             </div>
